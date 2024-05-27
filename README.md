@@ -1,2 +1,4 @@
 # 100-Days-Of-Python
-A b
+
+Here we have list of projects:
+1.) Mandelbrot Fractals
