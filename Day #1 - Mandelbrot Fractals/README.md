@@ -49,4 +49,5 @@ The following configuration options are available:
 
 This project was inspired by the work of Benoit Mandelbrot and other mathematicians who have studied fractals.
 
-![Uploading image.png…]()
+![Mandelbrot](https://github.com/TylerCodesTech/100-Days-Of-Python/assets/132624407/895af354-b651-41b1-81f2-f557ed5f9694)
+
