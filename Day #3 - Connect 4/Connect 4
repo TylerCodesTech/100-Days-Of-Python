@@ -1,0 +1,142 @@
+import tkinter as tk
+from tkinter import messagebox, Toplevel, StringVar
+import random
+
+# Constants for the game
+ROWS, COLUMNS = 6, 7
+EMPTY = "White"  # Color for empty slots
+
+# Default colors for players
+default_player_color = "Red"
+default_ai_color = "Yellow"
+
+# Variables to track game status and player colors
+current_player = default_player_color
+opponent_player = default_ai_color
+board = [[EMPTY] * COLUMNS for _ in range(ROWS)]
+
+def create_board_window():
+    window = tk.Tk()
+    window.title("Connect 4")
+    window.configure(background='blue')
+    return window
+
+def create_game_board(window):
+    buttons = {}
+    for row in range(ROWS):
+        for col in range(COLUMNS):
+            canvas = tk.Canvas(window, width=60, height=60, bg='blue', highlightthickness=0)
+            canvas.grid(row=row, column=col, padx=2, pady=2)
+            canvas.create_oval(10, 10, 50, 50, fill=EMPTY, tags=f"{row}_{col}")
+            canvas.bind("<Button-1>", lambda event, r=row, c=col: on_button_press(r, c))
+            buttons[(row, col)] = canvas
+    return buttons
+
+def splash_screen():
+    splash = tk.Tk()
+    splash.title("Connect 4 Splash Screen")
+    splash.geometry("300x200")
+    
+    tk.Button(splash, text="Start", command=lambda: start_game(splash)).pack(pady=10)
+    tk.Button(splash, text="Settings", command=settings).pack(pady=10)
+    tk.Button(splash, text="Exit", command=splash.quit).pack(pady=10)
+    
+    splash.mainloop()
+
+def start_game(splash):
+    splash.destroy()
+    window = create_board_window()
+    global buttons
+    buttons = create_game_board(window)
+    window.mainloop()
+
+def settings():
+    settings_window = Toplevel()
+    settings_window.title("Settings")
+    settings_window.geometry("300x200")
+
+    color_choices = ["Red", "Yellow", "Green", "Blue", "Purple"]
+    player_color_var = StringVar(value=current_player)
+    ai_color_var = StringVar(value=opponent_player)
+
+    tk.Label(settings_window, text="Select your color:").pack(pady=10)
+    player_menu = tk.OptionMenu(settings_window, player_color_var, *color_choices)
+    player_menu.pack()
+
+    tk.Label(settings_window, text="Select AI color:").pack(pady=10)
+    ai_menu = tk.OptionMenu(settings_window, ai_color_var, *color_choices)
+    ai_menu.pack()
+
+    def apply_colors():
+        global current_player, opponent_player
+        current_player = player_color_var.get()
+        opponent_player = ai_color_var.get()
+
+    tk.Button(settings_window, text="Apply", command=apply_colors).pack(pady=20)
+
+def on_button_press(row, col):
+    global current_player
+    if current_player == default_player_color:
+        if place_disc(row, col):
+            if current_player == default_ai_color:  # Check if AI's turn
+                ai_move()
+
+def place_disc(row, col):
+    global current_player
+    for r in range(ROWS-1, -1, -1):
+        if board[r][col] == EMPTY:
+            board[r][col] = current_player
+            buttons[(r, col)].itemconfig("1", fill=current_player)
+            if check_win(r, col):
+                messagebox.showinfo("Game Over", f"{current_player} wins!")
+                reset_board()
+                return False
+            elif check_draw():
+                messagebox.showinfo("Game Over", "It's a draw!")
+                reset_board()
+                return False
+            switch_player()
+            return True
+    return False
+
+def switch_player():
+    global current_player
+    current_player = default_ai_color if current_player == default_player_color else default_player_color
+
+def ai_move():
+    available_columns = [col for col in range(COLUMNS) if board[0][col] == EMPTY]
+    if available_columns:
+        selected_col = random.choice(available_columns)
+        place_disc(0, selected_col)
+
+def check_win(row, col):
+    def check_direction(d_row, d_col):
+        count = 1
+        for d in [1, -1]:
+            r, c = row, col
+            while True:
+                r += d_row * d
+                c += d_col * d
+                if 0 <= r < ROWS and 0 <= c < COLUMNS and board[r][c] == current_player:
+                    count += 1
+                    if count >= 4:
+                        return True
+                else:
+                    break
+        return False
+
+    directions = [(1, 0), (0, 1), (1, 1), (1, -1)]
+    return any(check_direction(dr, dc) for dr, dc in directions)
+
+def check_draw():
+    return all(board[row][col] != EMPTY for row in range(ROWS) for col in range(COLUMNS))
+
+def reset_board():
+    global board
+    board = [[EMPTY] * COLUMNS for _ in range(ROWS)]
+    for row in range(ROWS):
+        for col in range(COLUMNS):
+            buttons[(row, col)].itemconfig("1", fill=EMPTY)
+
+if __name__ == "__main__":
+    splash_screen()
