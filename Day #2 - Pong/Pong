@@ -1,1 +1,141 @@
-Pong Place holder
+
+import turtle
+
+# Set up the screen
+win = turtle.Screen()  # Create a window for the game
+win.title("Pong")  # Set the window title to "Pong"
+win.bgcolor("black")  # Set the background color of the window to black
+win.setup(width=600, height=600)  # Set the size of the window
+win.tracer(0)  # Turn off automatic screen updates
+
+# Create Paddle A
+paddle_a = turtle.Turtle()  # Create a turtle object for the paddle
+paddle_a.speed(0)  # Set the animation speed of the turtle to the maximum
+paddle_a.shape("square")  # Set the shape of the turtle to a square
+paddle_a.color("white")  # Set the color of the turtle to white
+paddle_a.shapesize(stretch_wid=6, stretch_len=1)  # Stretch the turtle to make a paddle shape
+paddle_a.penup()  # Lift the pen up so it does not draw a line
+paddle_a.goto(-250, 0)  # Position paddle A on the left side of the screen
+
+# Create Paddle B
+paddle_b = turtle.Turtle()
+paddle_b.speed(0)
+paddle_b.shape("square")
+paddle_b.color("white")
+paddle_b.shapesize(stretch_wid=6, stretch_len=1)
+paddle_b.penup()
+paddle_b.goto(250, 0)  # Position paddle B on the right side of the screen
+
+# Create the ball
+ball = turtle.Turtle()
+ball.speed(0)
+ball.shape("square")
+ball.color("white")
+ball.penup()
+ball.goto(0, 0)
+ball.dx = 2  # Set the ball's movement increment in the x direction
+ball.dy = 2  # Set the ball's movement increment in the y direction
+
+# Initialize score variables
+score_a = 0  # Player A's score
+score_b = 0  # Player B's score
+
+# Create score display
+score_display = turtle.Turtle()
+score_display.speed(0)
+score_display.color("white")
+score_display.penup()
+score_display.hideturtle()
+score_display.goto(0, 260)
+score_display.write("Player A: 0  Player B: 0", align="center", font=("Courier", 24, "normal"))
+
+# Function to update the score display
+def update_score():
+    """Clear the current score and display the updated score."""
+    score_display.clear()
+    score_display.write(f"Player A: {score_a}  Player B: {score_b}", align="center", font=("Courier", 24, "normal"))
+
+# Functions to move paddles
+def paddle_a_up():
+    """Move paddle A up by 20 pixels, if within bounds."""
+    y = paddle_a.ycor()
+    if y < 250:
+        paddle_a.sety(y + 20)
+
+def paddle_a_down():
+    """Move paddle A down by 20 pixels, if within bounds."""
+    y = paddle_a.ycor()
+    if y > -240:
+        paddle_a.sety(y - 20)
+
+def paddle_b_up():
+    """Move paddle B up by 20 pixels, if within bounds."""
+    y = paddle_b.ycor()
+    if y < 250:
+        paddle_b.sety(y + 20)
+
+def paddle_b_down():
+    """Move paddle B down by 20 pixels, if within bounds."""
+    y = paddle_b.ycor()
+    if y > -240:
+        paddle_b.sety(y - 20)
+
+# Keyboard bindings for controlling paddles
+win.listen()
+win.onkeypress(paddle_a_up, "w")
+win.onkeypress(paddle_a_down, "s")
+win.onkeypress(paddle_b_up, "Up")
+win.onkeypress(paddle_b_down, "Down")
+
+# Function to increase ball speed
+def increase_speed():
+    """Increase the speed of the ball by adjusting its dx and dy values."""
+    if ball.dx > 0:
+        ball.dx += 0.05
+    else:
+        ball.dx -= 0.05
+    if ball.dy > 0:
+        ball.dy += 0.05
+    else:
+        ball.dy -= 0.05
+
+# Main game loop
+while True:
+    win.update()  # Manually update the screen
+
+    # Move the ball
+    ball.setx(ball.xcor() + ball.dx)
+    ball.sety(ball.ycor() + ball.dy)
+
+    # Border checking to bounce the ball off the top and bottom walls
+    if ball.ycor() > 290:
+        ball.sety(290)
+        ball.dy *= -1
+    if ball.ycor() < -290:
+        ball.sety(-290)
+        ball.dy *= -1
+
+    # Check for the ball going past the paddles
+    if ball.xcor() > 290:
+        ball.goto(0, 0)
+        ball.dx = 2 * (-1 if ball.dx > 0 else 1)  # Reset to base speed
+        ball.dy = 2 * (-1 if ball.dy > 0 else 1)
+        score_a += 1
+        update_score()
+    if ball.xcor() < -290:
+        ball.goto(0, 0)
+        ball.dx = 2 * (-1 if ball.dx > 0 else 1)
+        ball.dy = 2 * (-1 if ball.dy > 0 else 1)
+        score_b += 1
+        update_score()
+
+    # Paddle and ball collisions
+    if (ball.xcor() > 240 and ball.xcor() < 250) and (ball.ycor() < paddle_b.ycor() + 50 and ball.ycor() > paddle_b.ycor() - 50):
+        ball.setx(240)
+        ball.dx *= -1
+        increase_speed()
+
+    if (ball.xcor() < -240 and ball.xcor() > -250) and (ball.ycor() < paddle_a.ycor() + 50 and ball.ycor() > paddle_a.ycor() - 50):
+        ball.setx(-240)
+        ball.dx *= -1
+        increase_speed()
