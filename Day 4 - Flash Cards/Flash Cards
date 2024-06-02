@@ -1,0 +1,151 @@
+Place holder - work in progress code:
+--Working on adding gpt2 for generate possible test questions for this flash card script.
+
+import tkinter as tk
+from tkinter import simpledialog, messagebox, Listbox, Entry, Button
+import json
+import random
+
+class FlashcardApp:
+    def __init__(self, master):
+        self.master = master
+        master.title("Flashcard Study System")
+
+        # Load flashcards if available
+        self.flashcards = []
+        self.load_flashcards()
+
+        # Setup main frame and sidebar
+        self.frame = tk.Frame(master)
+        self.frame.pack(side=tk.LEFT, padx=10, pady=10)
+
+        self.sidebar = tk.Frame(master, padx=10)
+        self.sidebar.pack(side=tk.RIGHT, fill=tk.Y)
+
+        # Listbox to show flashcards
+        self.listbox = Listbox(self.sidebar)
+        self.listbox.pack(expand=True, fill=tk.BOTH)
+        self.listbox.bind('<<ListboxSelect>>', self.on_select)
+
+        # Search box
+        self.search_var = tk.StringVar()
+        self.search_var.trace("w", lambda name, index, mode, sv=self.search_var: self.update_listbox())
+        self.search_entry = Entry(self.sidebar, textvariable=self.search_var)
+        self.search_entry.pack()
+
+        # Add, Save, Edit, and Delete Buttons
+        self.new_card_button = Button(self.sidebar, text="Add New Flashcard", command=self.add_flashcard)
+        self.new_card_button.pack()
+        self.save_button = Button(self.sidebar, text="Save Flashcards", command=self.save_flashcards)
+        self.save_button.pack()
+        self.edit_button = Button(self.sidebar, text="Edit Selected", command=self.edit_flashcard)
+        self.edit_button.pack()
+        self.delete_button = Button(self.sidebar, text="Delete Selected", command=self.delete_flashcard)
+        self.delete_button.pack()
+
+        # Flashcard display area
+        self.card_text = tk.Label(self.frame, text="", width=40, height=10, relief=tk.RAISED)
+        self.card_text.pack(pady=20)
+
+        # Quiz mode button
+        self.quiz_button = Button(self.frame, text="Start Quiz", command=self.start_quiz)
+        self.quiz_button.pack()
+
+        # Initialize display
+        self.update_listbox()
+
+    def add_flashcard(self):
+        term = simpledialog.askstring("Term", "Enter the term:", parent=self.master)
+        definition = simpledialog.askstring("Definition", "Enter the definition:", parent=self.master)
+        if term and definition:
+            self.flashcards.append({'term': term, 'definition': definition})
+            self.update_listbox()
+
+    def edit_flashcard(self):
+        if not self.listbox.curselection():
+            return
+        index = self.listbox.curselection()[0]
+        card = self.flashcards[index]
+        new_term = simpledialog.askstring("Edit Term", "Current term: " + card['term'], parent=self.master)
+        new_definition = simpledialog.askstring("Edit Definition", "Current definition: " + card['definition'], parent=self.master)
+        if new_term and new_definition:
+            self.flashcards[index] = {'term': new_term, 'definition': new_definition}
+            self.update_listbox()
+
+    def delete_flashcard(self):
+        if not self.listbox.curselection():
+            return
+        index = self.listbox.curselection()[0]
+        del self.flashcards[index]
+        self.update_listbox()
+
+    def on_select(self, event):
+        if not self.listbox.curselection():
+            return
+        index = self.listbox.curselection()[0]
+        self.card_text.config(text=self.flashcards[index]['term'])
+
+    def update_listbox(self):
+        search_term = self.search_var.get().lower()
+        self.listbox.delete(0, tk.END)
+        for card in self.flashcards:
+            if search_term in card['term'].lower() or search_term in card['definition'].lower():
+                self.listbox.insert(tk.END, card['term'])
+
+    def save_flashcards(self):
+        with open('flashcards.json', 'w') as f:
+            json.dump(self.flashcards, f)
+        messagebox.showinfo("Save", "Flashcards saved successfully!")
+
+    def load_flashcards(self):
+        try:
+            with open('flashcards.json', 'r') as f:
+                self.flashcards = json.load(f)
+        except FileNotFoundError:
+            self.flashcards = []
+
+    def start_quiz(self):
+        if not self.flashcards:
+            messagebox.showinfo("Quiz", "No flashcards to quiz on!")
+            return
+        quiz_window = tk.Toplevel(self.master)
+        quiz_window.title("Quiz Mode")
+        quiz = Quiz(quiz_window, self.flashcards)
+
+class Quiz:
+    def __init__(self, master, flashcards):
+        self.master = master
+        self.flashcards = random.sample(flashcards, min(5, len(flashcards)))
+        self.current_card = 0
+        self.score = 0
+
+        self.question_label = tk.Label(master, text=self.flashcards[self.current_card]['term'])
+        self.question_label.pack(pady=20)
+
+        self.answer_entry = tk.Entry(master)
+        self.answer_entry.pack()
+
+        self.check_button = tk.Button(master, text="Check Answer", command=self.check_answer)
+        self.check_button.pack(pady=20)
+
+    def check_answer(self):
+        if self.answer_entry.get().lower() == self.flashcards[self.current_card]['definition'].lower():
+            self.score += 1
+            messagebox.showinfo("Correct!", "Correct Answer!")
+        else:
+            messagebox.showinfo("Wrong!", f"Wrong Answer! The correct answer was: {self.flashcards[self.current_card]['definition']}")
+        self.current_card += 1
+        if self.current_card < len(self.flashcards):
+            self.question_label.config(text=self.flashcards[self.current_card]['term'])
+            self.answer_entry.delete(0, tk.END)
+        else:
+            messagebox.showinfo("Quiz Complete", f"Quiz complete! Your score: {self.score}/{len(self.flashcards)}")
+            self.master.destroy()
+
+def main():
+    root = tk.Tk()
+    app = FlashcardApp(root)
+    root.mainloop()
+
+if __name__ == "__main__":
+    main()
