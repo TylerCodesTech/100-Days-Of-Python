@@ -1,10 +1,9 @@
-Place holder - work in progress code:
---Working on adding gpt2 for generate possible test questions for this flash card script.
-
 import tkinter as tk
 from tkinter import simpledialog, messagebox, Listbox, Entry, Button
 import json
 import random
+from transformers import AutoModelForCausalLM, AutoTokenizer
+import torch
 
 class FlashcardApp:
     def __init__(self, master):
@@ -112,6 +111,7 @@ class FlashcardApp:
         quiz_window.title("Quiz Mode")
         quiz = Quiz(quiz_window, self.flashcards)
 
+
 class Quiz:
     def __init__(self, master, flashcards):
         self.master = master
@@ -119,25 +119,50 @@ class Quiz:
         self.current_card = 0
         self.score = 0
 
-        self.question_label = tk.Label(master, text=self.flashcards[self.current_card]['term'])
+        # Load GPT-2 model
+        self.model = AutoModelForCausalLM.from_pretrained("gpt2")
+        self.tokenizer = AutoTokenizer.from_pretrained("gpt2")
+
+        self.setup_question()
+
+    def setup_question(self):
+        card = self.flashcards[self.current_card]
+        self.question_label = tk.Label(self.master, text=card['term'])
         self.question_label.pack(pady=20)
 
-        self.answer_entry = tk.Entry(master)
-        self.answer_entry.pack()
+        self.choices = self.generate_choices(card)
+        self.var = tk.StringVar()
+        for choice in self.choices:
+            tk.Radiobutton(self.master, text=choice, variable=self.var, value=choice).pack(anchor=tk.W)
 
-        self.check_button = tk.Button(master, text="Check Answer", command=self.check_answer)
-        self.check_button.pack(pady=20)
+        self.submit_button = tk.Button(self.master, text="Submit Answer", command=self.check_answer)
+        self.submit_button.pack(pady=20)
+
+    def generate_choices(self, card):
+        correct = card['definition']
+        prompt = f"Generate three plausible but incorrect definitions for the term: {card['term']}"
+        input_ids = self.tokenizer(prompt, return_tensors="pt").input_ids
+        gen_tokens = self.model.generate(input_ids, do_sample=True, temperature=0.9, max_length=100)
+        gen_text = self.tokenizer.batch_decode(gen_tokens)[0]
+        distractors = [self.clean_text(distractor) for distractor in gen_text.split('\n')[:3]]
+        choices = [correct] + distractors
+        random.shuffle(choices)
+        return choices
+
+    def clean_text(self, text):
+        return ' '.join(text.strip().split())
 
     def check_answer(self):
-        if self.answer_entry.get().lower() == self.flashcards[self.current_card]['definition'].lower():
+        if self.var.get() == self.flashcards[self.current_card]['definition']:
             self.score += 1
             messagebox.showinfo("Correct!", "Correct Answer!")
         else:
             messagebox.showinfo("Wrong!", f"Wrong Answer! The correct answer was: {self.flashcards[self.current_card]['definition']}")
         self.current_card += 1
         if self.current_card < len(self.flashcards):
-            self.question_label.config(text=self.flashcards[self.current_card]['term'])
-            self.answer_entry.delete(0, tk.END)
+            for widget in self.master.winfo_children():
+                widget.destroy()
+            self.setup_question()
         else:
             messagebox.showinfo("Quiz Complete", f"Quiz complete! Your score: {self.score}/{len(self.flashcards)}")
             self.master.destroy()
