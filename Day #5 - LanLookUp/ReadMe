@@ -1,0 +1,33 @@
+LanLookUp
+
+LanLookUp is a Python script that leverages the nmap network scanning library and system subprocesses to scan your local network and identify devices that are currently connected. This script displays the IP addresses and hostnames (when available) of each device detected on the network.
+Features
+
+    Network Scanning: Scans all devices on the same network subnet as the host machine.
+    Hostname Resolution: Attempts to resolve and display hostnames for each detected IP address.
+    Status Reporting: Reports the connection status of each device on the network.
+
+Prerequisites
+
+Before you can run LanLookUp, you need to have Python installed on your system along with the following Python packages:
+
+    nmap: Used for performing network scans.
+    subprocess: Used for executing system-level commands.
+
+You can install nmap using pip: pip install python-nmap
+
+Usage
+To run the script, simply navigate to the directory containing LanLookUp.py and run the following command in your terminal:
+
+python LanLookUp.py
+
+How It Works
+
+    IP Detection: The script first determines the IP address of the host machine.
+    Network Scan: It then scans the network for all devices connected to the same subnet as the host.
+    Result Display: For each device, the script attempts to retrieve and display the hostname. If it cannot find a hostname, it labels the device as "Unknown".
+
+Important Notes
+
+    Ensure that you have administrative or sufficient privileges to run network scans in your environment.
+    Network scanning can sometimes be detected as suspicious activity by network security systems, so it is advised to have permissions where necessary.
