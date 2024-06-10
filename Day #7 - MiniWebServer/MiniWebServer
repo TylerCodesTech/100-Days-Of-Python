@@ -1,0 +1,48 @@
+import socket
+import logging
+
+# Constants
+HOST, PORT = 'localhost', 9000
+BUFFER_SIZE = 5000
+
+def send_http_response(clientsocket, content):
+    """Send an HTTP response to the client."""
+    response = (
+        "HTTP/1.1 200 OK\r\n"
+        "Content-Type: text/html; charset=utf-8\r\n"
+        "\r\n"
+        f"{content}\r\n"
+    )
+    clientsocket.sendall(response.encode())
+
+def handle_client_connection(clientsocket):
+    """Handle incoming client requests."""
+    request_data = clientsocket.recv(BUFFER_SIZE).decode()
+    request_lines = request_data.split("\n")
+    if request_lines:
+        logging.info(f"Received request: {request_lines[0]}")
+
+    html_content = "<html><body>YOU DID IT :)</body></html>"
+    send_http_response(clientsocket, html_content)
+    clientsocket.shutdown(socket.SHUT_WR)
+
+def create_server():
+    """Create and run the server."""
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as serversocket:
+        serversocket.bind((HOST, PORT))
+        serversocket.listen(5)
+        logging.info(f"Server started at {HOST}:{PORT}")
+        try:
+            while True:
+                clientsocket, address = serversocket.accept()
+                with clientsocket:
+                    handle_client_connection(clientsocket)
+        except KeyboardInterrupt:
+            logging.info("Server is shutting down...")
+        except Exception as e:
+            logging.error(f"Error: {e}")
+
+if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO)
+    print(f'Access http://{HOST}:{PORT}')
+    create_server()
