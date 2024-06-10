@@ -1,0 +1,16 @@
+Tic Tac Toe in Python with Tkinter
+
+This repository contains a simple yet engaging Tic Tac Toe game written in Python, utilizing the Tkinter GUI library. The game allows for a single player to compete against a computer-controlled opponent. The computer's moves are determined through basic strategy, ensuring a challenging but fair gameplay experience.
+Features
+
+    Graphical User Interface: Utilizes Tkinter for a responsive and intuitive GUI.
+    Intelligent Computer Opponent: The computer opponent makes decisions based on potential winning moves or blocks.
+    Restart Functionality: Players can restart the game at any time with a dedicated button.
+    Winning Condition Check: The game checks for winning conditions after every move.
+
+How to Play
+
+    The game starts with the player's turn, marked by 'X'. Click on any of the 9 grid buttons to make a move.
+    The computer will automatically make its move as 'O' after the player.
+    The game announces a winner or a tie through a label at the top of the window.
+    To play again, click the "Restart" button at the top of the window.
