@@ -1,0 +1,104 @@
+import tkinter as tk
+import random
+
+def insertLetter(letter, pos, button):
+    board[pos] = letter
+    button.config(text=letter, state="disabled")
+
+def spaceIsFree(pos):
+    return board[pos] == ' '
+
+def isBoardFull(board):
+    return board.count(' ') == 1
+
+def isWinner(b, l):
+    return ((b[1] == l and b[2] == l and b[3] == l) or
+            (b[4] == l and b[5] == l and b[6] == l) or
+            (b[7] == l and b[8] == l and b[9] == l) or
+            (b[1] == l and b[4] == l and b[7] == l) or
+            (b[2] == l and b[5] == l and b[8] == l) or
+            (b[3] == l and b[6] == l and b[9] == l) or
+            (b[1] == l and b[5] == l and b[9] == l) or
+            (b[3] == l and b[5] == l and b[7] == l))
+
+def disableButtons():
+    for button in button_list[1:]:
+        button.config(state="disabled")
+
+def enableButtons():
+    for pos, button in enumerate(button_list[1:], start=1):
+        if spaceIsFree(pos):
+            button.config(state="normal")
+
+def playerMove(button, pos):
+    if spaceIsFree(pos):
+        insertLetter('X', pos, button)
+        if isWinner(board, 'X'):
+            label.config(text="Congratulations! You win!")
+            disableButtons()
+        elif isBoardFull(board):
+            label.config(text="Tie game!")
+        else:
+            label.config(text="Computer's turn...")
+            root.after(500, computerMove)
+
+def computerMove():
+    possibleMoves = [x for x, letter in enumerate(board) if letter == ' ' and x != 0]
+    move = 0
+
+    # Try to find a winning move or block the player -- this interesting
+    for let in ['O', 'X']:
+        for i in possibleMoves:
+            boardcopy = board[:]
+            boardcopy[i] = let
+            if isWinner(boardcopy, let):
+                move = i
+                break
+        if move != 0:
+            break
+
+    if move == 0:  # Choose any other free space - computer checking
+        move = random.choice(possibleMoves)
+
+    button_list[move].config(command=lambda: insertLetter('O', move, button_list[move]))
+    button_list[move].invoke()
+
+    if isWinner(board, 'O'):
+        label.config(text="Sorry, you lose!")
+        disableButtons()
+    elif isBoardFull(board):
+        label.config(text="Tie game!")
+    else:
+        label.config(text="Your turn!")
+
+def createButton(frame, pos):
+    return tk.Button(frame, text=' ', font=('normal', 20), height=3, width=6,
+                     command=lambda: playerMove(button_list[pos], pos))
+
+root = tk.Tk()
+root.title("Tic Tac Toe")
+
+label = tk.Label(root, text="Your Turn!", font=('normal', 20))
+label.pack(side="top")
+
+reset_button = tk.Button(root, text="Restart", font=('normal', 20), command=lambda: restartGame())
+reset_button.pack(side="top")
+
+frame = tk.Frame(root)
+frame.pack()
+
+button_list = [tk.Button()] * 10  # list of buttons for game board
+for i in range(1, 10):
+    button_list[i] = createButton(frame, i)
+    button_list[i].grid(row=(i-1)//3, column=(i-1)%3)
+
+def restartGame():
+    global board
+    board = [' ' for _ in range(10)]
+    label.config(text="Your Turn!")
+    for button in button_list[1:]:
+        button.config(text=' ', state="normal")
+
+board = [' ' for _ in range(10)]
+
+root.mainloop()
