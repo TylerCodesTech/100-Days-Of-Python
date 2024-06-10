@@ -1,0 +1,22 @@
+MiniWebServer
+
+MiniWebServer is a lightweight and straightforward HTTP server written in Python. It's designed to handle basic HTTP requests and respond with a simple HTML page.
+
+Features
+
+    Simple HTTP GET request handling.
+    Responds with a fixed HTML content.
+    Easy to understand and extend.
+
+How It Works
+
+    Server Initialization: The server starts on localhost at a predefined port (9000 by default). It listens for incoming TCP connections.
+    Request Handling: Once a client connects, the server reads the incoming HTTP request. It currently handles all requests by logging the initial request line and sending back a fixed HTML response.
+    Response: The response includes standard HTTP headers and a simple HTML body. The server sends this response to the connected client.
+    Logging: Basic logging is implemented to provide insights into server operations, like starting up and shutting down, and to log any errors or incoming requests.
+
+Accessing the Server:
+
+    Open your web browser.
+    Navigate to http://localhost:9000.
+    You should see a simple webpage displaying "YOU DID IT :)".
