@@ -1,0 +1,32 @@
+import nmap
+import subprocess
+
+# Function to scan the network and display IPs of connected devices
+def scan_network():
+    try:
+        # Create a scanner object
+        scanner = nmap.PortScanner()
+
+        # Get the IP of the local machine
+        output = subprocess.check_output(['hostname', '-I']).strip()
+        my_ip = output.decode('utf-8').split('.')
+        base_ip = '.'.join(my_ip[:3])
+
+        # Conduct a network scan
+        scanned_data = scanner.scan(hosts=f'{base_ip}.1/24', arguments='-sn')
+
+        # Check and print results of the scan
+        for ip, result in scanned_data['scan'].items():
+            if 'status' in result and result['status']['state'] == 'up':
+                try:
+                    hostname = result['hostnames'][0]['name'] if result['hostnames'][0]['name'] else 'Unknown'
+                except IndexError:
+                    hostname = 'Unknown'
+                print(f'Host: {ip} ({hostname}) is up.')
+            else:
+                print(f'Host: {ip} is down or unresponsive.')
+    except Exception as e:
+        print(f"An error occurred: {e}")
+
+# Run the network scan function
+scan_network()
