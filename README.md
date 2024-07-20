@@ -12,7 +12,8 @@ Welcome to my repository, where I'll be documenting my progress and sharing my c
 
 
 6. **Tetris**: Clear lines by rotating and dropping Tetriminos in this implementation of the classic puzzle game.
-5. **Todo List**: Stay organized with a simple todo list app that lets you add, remove, and mark tasks as completed.
+7. **Todo List**: Stay organized with a simple todo list app that lets you add, remove, and mark tasks as completed.
+8. **Random Joke Generator**: Displays a random joke from a API
 
 These projects showcase my growth and experimentation with Python throughout this 100-day journey. I'll be regularly updating this README with new project details, and I'm excited to share them with you!
 
